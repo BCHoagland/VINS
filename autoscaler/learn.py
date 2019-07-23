@@ -16,7 +16,7 @@ import service_sim
 
 lr = 3e-4
 vis_iter = 200
-epochs = 5e4
+epochs = 2e4
 demo_steps = 3e4
 
 # move demos to new storage type
@@ -31,7 +31,8 @@ env = gym.make('ServiceSim-v0')
 
 v = Model(V, env, lr, target=True)
 model = Model(M, env, lr)
-π = Model(StochasticPolicy, env, lr)
+# π = Model(StochasticPolicy, env, lr)
+π = Model(DeterministicPolicy, env, lr)
 
 def fit_value():
     print('Fitting value function and environment model')
@@ -79,19 +80,31 @@ def clone_behavior():
 def bc():
     print('Running behavioral cloning policy')
 
+    # run on new data
     ep = 0
     all_r = deque(maxlen=1000)
     s = env.reset()
     for t in range(int(demo_steps)):
         with torch.no_grad():
             a = π(s)
-            print(a)
         s, r, done, _ = env.step(a.numpy())
         all_r.append(r)
 
         if t % 500 == 499:
             plot(t, s[-2], 'Instances (BC)')
             plot(t, sum(all_r) / len(all_r), 'BC Mean Reward', color='#fb0')
+
+    # run on old data
+    states = storage.get_all()[0]
+    t = 0
+    for s in states:
+        t += 1
+        with torch.no_grad():
+            a = π(s)
+        s, r, done, _ = env.step(a.numpy())
+
+        if t % 500 == 499:
+            plot(t, a, 'BC Action')
 
 def noisy_bc():
     print('Running implicit VINS policy')
@@ -106,8 +119,9 @@ def noisy_bc():
             max_value = v(model(s, max_a))
 
             for i in range(10):
-                noise = 2 * torch.rand_like(a) - 1
-                new_a = a + 0.3 * noise
+                # noise = 2 * torch.rand_like(a) - 1
+                # new_a = a + 5 * noise
+                new_a = torch.FloatTensor(env.action_space.sample())
                 value = v(model(s, new_a))
 
                 if value > max_value:
@@ -122,6 +136,7 @@ def noisy_bc():
             plot(t, sum(all_r) / len(all_r), 'VINS Mean Reward', color='#f40')
 
 clone_behavior()
-fit_value()
 bc()
+
+fit_value()
 noisy_bc()

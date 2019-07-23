@@ -11,7 +11,7 @@ from storage import Storage
 from visualize import *
 
 
-timesteps = 50000
+timesteps = 30000
 vis_iter = 100
 
 
@@ -23,7 +23,7 @@ s = env.reset()
 for t in range(int(timesteps)):
 
     # rule-based action selection
-    req_rate = s[-3]
+    # req_rate = s[-3]
     instances = s[-2]
     requests = s[-1]
     if requests == 0:
@@ -41,7 +41,7 @@ for t in range(int(timesteps)):
     s = s2 if not done else env.reset()
 
     if t % vis_iter == vis_iter - 1:
-        plot(t, req_rate, 'Rule-Based Request Rate', '#f0f')
+        # plot(t, req_rate, 'Rule-Based Request Rate', '#f0f')
         plot(t, instances, 'Rule-Based Instances', '#f00')
         plot(t, requests, 'Rule-Based Requests', '#00f')
 
