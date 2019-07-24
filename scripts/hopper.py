@@ -20,12 +20,14 @@ class Config:
     vis_iter = 200
     lr = 3e-4
     epochs = 4e4
+    run_steps = 1e4
 
 
 demos = expert_demos(ExpertConfig)
 agent = Agent(Config, demos)
-agent.train()
-
+agent.behavior_clone()
+agent.fit_value()
+agent.run()
 
 
 # PARAMS FOR VINS

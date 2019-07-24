@@ -96,6 +96,22 @@ def plot(t, r, name, color='#000'):
     viz._send({'data': data, 'layout': layout, 'win': win})
 
 
+def map(v, low, high, name):                                                                          # move into something PathEnv specific
+    points = np.zeros((int(high[0]) - int(low[0]) + 1, int(high[1]) - int(low[1]) + 1))
+    for x in range(int(low[0]), int(high[0]) + 1):
+        for y in range(int(low[1]), int(high[1]) + 1):
+            points[(x, y)] = v([x, y])
+
+    viz.heatmap(
+        X=points.T,
+        win=f'map-{name}',
+        opts=dict(
+            title=f'Values - {name}'
+        )
+    )
+
+
+
 def alert(text, done=False):
     if done:
         text = '\r' + colored('\U00002714 ', 'green') + text + '\n'
