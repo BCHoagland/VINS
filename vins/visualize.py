@@ -50,47 +50,29 @@ def plot_loss(epoch, loss, name, color='#000'):
 
 
 def plot_reward(t, r, name, color='#000'):
-    # win = name
-    # title = name + ' Episodic Reward'
-    win = 'reward'
-    title = 'Episodic Reward'
+    plot(t, r, 'reward', name, color)
 
-    if 'reward' not in d:
-        d['reward'] = {}
 
-    if name not in d['reward']:
-        d['reward'][name] = {'points': [], 'color': color}
-    d['reward'][name]['points'].append((t, float(r)))
+def plot(t, r, data_type, name, color='#000'):
+    win = data_type
+    title = data_type
+
+    if data_type not in d:
+        d[data_type] = {}
+
+    if name not in d[data_type]:
+        d[data_type][name] = {'points': [], 'color': color}
+    d[data_type][name]['points'].append((t, float(r)))
 
     data = []
-    for name in d['reward']:
-        x, y = zip(*d['reward'][name]['points'])
-        data.append(get_line(x, y, name, color=d['reward'][name]['color'], showlegend=True))
-
-    layout = dict(
-        title=title,
-        xaxis={'title': 'Episode'},
-        yaxis={'title': 'Episodic Reward'}
-    )
-
-    viz._send({'data': data, 'layout': layout, 'win': win})
-
-
-def plot(t, r, name, color='#000'):
-    win = name
-    title = name
-
-    if name not in d:
-        d[name] = []
-    d[name].append((t, float(r)))
-
-    x, y = zip(*d['reward'][name])
-    data = [get_line(x, y, name, color=color)]
+    for name in d[data_type]:
+        x, y = zip(*d[data_type][name]['points'])
+        data.append(get_line(x, y, name, color=d[data_type][name]['color'], showlegend=True))
 
     layout = dict(
         title=title,
         xaxis={'title': 'Iterations'},
-        yaxis={'title': name}
+        yaxis={'title': data_type}
     )
 
     viz._send({'data': data, 'layout': layout, 'win': win})
@@ -109,7 +91,6 @@ def map(v, low, high, name):                                                    
             title=f'Values - {name}'
         )
     )
-
 
 
 def alert(text, done=False):
