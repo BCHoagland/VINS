@@ -10,7 +10,7 @@ try:
     print(f'Running {com}')
     importlib.import_module(script)
 
-except ModuleNotFoundError:
+except (IndexError, ModuleNotFoundError):
     com = colored('python train.py {script_name}', 'yellow')
     print('You need to specify which script to execute as so:\n' + com)
 
