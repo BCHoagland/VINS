@@ -24,6 +24,17 @@ To run the experiment from the paper, run the command `python train.py` from the
 
 
 
+## Code Structure
+
+# Path
+Contains the implementation of the path environment from the paper
+
+# Vins
+Contains code for the learning agent (`agent.py`), neural networks (`models.py`), and visdom plotting (`visualize.py`)
+
+
+
+
 ## Experiments
 
 I repeated the path-following experiment from the paper, where you attempt to extrapolate a value function using 1) the usual TD error and 2) the TD error augmented with a negative sampling error. The following two plots show the value function across the whole state space of the environment.

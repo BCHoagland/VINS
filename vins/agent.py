@@ -5,6 +5,29 @@ from path import PathEnv
 from collections import deque
 import numpy as np
 
+
+
+
+######################
+# Code Abbreviations #
+######################
+# s : state
+# s2 : next state
+# a : action
+# r : reward
+# d : done
+# m : mask (opposite of done)
+
+# v : value (representing a value network)
+# π_bc : stochastic policy found through behavioral cloning
+
+# ns : negative sampling
+
+# ep : episode
+
+
+
+
 class Agent:
     def __init__(self, config, demos):
         self.config = config
@@ -14,18 +37,22 @@ class Agent:
         self.reset()
 
 
+    # create new networks for the agent to use
+    # see vins/models.py for implementation details
     def reset(self):
         self.v = Network(ValueNetwork, self.config.lr, target=True)
         self.model = Network(EnvironmentModel, self.config.lr)
         self.π_bc = Network(StochasticPolicy, self.config.lr)
 
 
+    # use expectation maximization to learn a stochastic policy from expert demonstrations
     def behavior_clone(self, epochs):
         alert('Behavioral cloning')
 
         for epoch in range(int(epochs)):
             s, a, r, s2, d = self.demos.sample(128)
             m = 1 - d
+
             policy_loss = -self.π_bc.log_prob(s, a).mean()                          # for discrete action spaces only
             self.π_bc.minimize(policy_loss)
 
@@ -35,6 +62,7 @@ class Agent:
         alert('Behavioral cloning', done=True)
 
 
+    # fit a value function from expert demonstrations, with an option to use negative sampling
     def fit_value(self, epochs, negative_sampling=True):
         alert('Fitting value function')
 
@@ -49,6 +77,7 @@ class Agent:
                 td_target = r + 0.99 * m * self.v.target(s2)
             v_loss = torch.pow(td_target - self.v(s), 2).mean()
 
+            # negative sampling to augment value loss
             if negative_sampling:
                 with torch.no_grad():
                     s_perturb = s + 1 * torch.randn_like(s)                                                         # may be too much noise
@@ -59,7 +88,7 @@ class Agent:
             # optimize value network
             self.v.minimize(v_loss)
 
-            # optimize model
+            # optimize environment model
             model_loss = torch.norm(self.model(s, a) - s2, dim=1).unsqueeze(1).mean()
             self.model.minimize(model_loss)
 
@@ -74,6 +103,7 @@ class Agent:
         alert('Fitting value function', done=True)
 
 
+    # use random shooting based on the value function to determine an action
     def vins_action(self, s):
         a = self.π_bc(s).unsqueeze(-1)
 
@@ -81,8 +111,8 @@ class Agent:
         max_value = self.v(self.model(s, max_a))
 
         for i in range(10):
-            # noise = 2 * torch.rand_like(a) - 1
-            # new_a = a + 15 * noise
+            # the paper adds random noise to the BC policy
+            # the path environment is discrete, though, so I sample actions instead
             new_a = torch.FloatTensor([self.env.random_action()])
 
             value = self.v(self.model(s, new_a))
@@ -93,9 +123,11 @@ class Agent:
         return max_a
 
 
+    # get a running reward plot on the environment using a given policy
     def demo(self, steps, policy='VINS', mean_reward=False):
         alert(f'Running {policy} policy')
 
+        # decide how to choose actions
         if policy is 'VINS':
             get_action = self.vins_action
             color = '#5106E099'
@@ -106,11 +138,13 @@ class Agent:
             print('That policy doesn\'t exist')
             quit()
 
+        # bookkeeping <3
         ep_r = 0
         final_ep_r = 0
         past_r = deque(maxlen=1000)
+        
+        # run through the environment
         s = self.env.reset()
-
         for t in range(int(steps)):
             with torch.no_grad():
                 a = get_action(torch.FloatTensor(s))
@@ -119,6 +153,7 @@ class Agent:
             ep_r += r
             past_r.append(r)
 
+            # plot occassionally
             if t % self.config.vis_iter == self.config.vis_iter - 1:
                 if mean_reward:
                     plot_reward(t, sum(past_r) / len(past_r), policy, color=color)
@@ -137,10 +172,11 @@ class Agent:
         alert(f'Running {policy} policy', done=True)
 
 
+    # run both BC and VINS policies and plot the rewards
     def run(self, steps, mean_reward=False):
         self.demo(steps, 'BC', mean_reward)
         self.demo(steps, 'VINS', mean_reward)
 
-
-    def map_value(self, name):                                                          #! move somewhere else (PathEnv maybe?)
+    # plot a map of the value function
+    def map_value(self, name):
         map(self.v, np.array([0, 0]), np.array([13, 11]), name)
