@@ -64,7 +64,8 @@ class Agent:
 
     # fit a value function from expert demonstrations, with an option to use negative sampling
     def fit_value(self, epochs, negative_sampling=True):
-        alert('Fitting value function')
+        alert_mod = '(negative sampling)' if negative_sampling else '(normal)'
+        alert('Fitting value function ' + alert_mod)
 
         name_mod = 'NS' if negative_sampling else 'Normal'
 
@@ -100,7 +101,7 @@ class Agent:
                 plot_loss(epoch, v_loss, f'Value - {name_mod}', '#5106E0')
                 plot_loss(epoch, model_loss, f'Model - {name_mod}', '#5106E0')
 
-        alert('Fitting value function', done=True)
+        alert('Fitting value function ' + alert_mod, done=True)
 
 
     # use random shooting based on the value function to determine an action
@@ -124,7 +125,7 @@ class Agent:
 
 
     # get a running reward plot on the environment using a given policy
-    def demo(self, steps, policy='VINS', mean_reward=False):
+    def demo(self, steps, policy='VINS'):
         alert(f'Running {policy} policy')
 
         # decide how to choose actions
@@ -137,45 +138,33 @@ class Agent:
         else:
             print('That policy doesn\'t exist')
             quit()
-
-        # bookkeeping <3
-        ep_r = 0
-        final_ep_r = 0
-        past_r = deque(maxlen=1000)
+        
         
         # run through the environment
+        successes = 0
         s = self.env.reset()
         for t in range(int(steps)):
             with torch.no_grad():
                 a = get_action(torch.FloatTensor(s))
 
-            s, r, done, _ = self.env.step(a)
-            ep_r += r
-            past_r.append(r)
+            s, _, done, _ = self.env.step(a)
 
-            # plot occassionally
+            # occassionally plot how many times we've reached the target
             if t % self.config.vis_iter == self.config.vis_iter - 1:
-                if mean_reward:
-                    plot_reward(t, sum(past_r) / len(past_r), policy, color=color)
-                else:
-                    plot_reward(t, final_ep_r, policy, color=color)
+                plot(t, successes, 'Successes', policy, color=color)
 
-                if policy is 'VINS':
-                    with torch.no_grad():
-                        plot(t, self.v(self.model(torch.FloatTensor(s), a)), 'Predicted Return', policy, color=color)
-
+            # if we're done, then we reached the target successfully
             if done:
-                final_ep_r = ep_r
-                ep_r = 0
+                successes += 1
                 s = self.env.reset()
 
         alert(f'Running {policy} policy', done=True)
 
 
     # run both BC and VINS policies and plot the rewards
-    def run(self, steps, mean_reward=False):
-        self.demo(steps, 'BC', mean_reward)
-        self.demo(steps, 'VINS', mean_reward)
+    def run(self, steps):
+        self.demo(steps, 'BC')
+        self.demo(steps, 'VINS')
 
     # plot a map of the value function
     def map_value(self, name):

@@ -49,10 +49,6 @@ def plot_loss(epoch, loss, name, color='#000'):
     viz._send({'data': data, 'layout': layout, 'win': win})
 
 
-def plot_reward(t, r, name, color='#000'):
-    plot(t, r, 'reward', name, color)
-
-
 def plot(t, r, data_type, name, color='#000'):
     win = data_type
     title = data_type

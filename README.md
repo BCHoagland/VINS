@@ -24,7 +24,7 @@ you'll get lots of errors.
 Install with `pip install termcolor`
 
 ### Running the Code
-To run the experiment from the paper, run the command `python train.py` from the top level of this repo
+To run the experiment from the paper, run the command `python train.py` from the top level of this repo.
 
 
 
