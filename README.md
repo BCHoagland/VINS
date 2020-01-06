@@ -12,11 +12,16 @@ From the paper `Learning Self-Correctable Policies and Value Functions from Demo
 * PyTorch
 * NumPy
 * Visdom
+* Termcolor
 
 ### Note about Visdom
 Visdom is how everything gets plotted. To install, run `pip install visdom`. Before running the code in this repo, open a seprate terminal window
 and run the command `visdom`. A GUI will appear on `localhost:8097`. This process has to run in the background for plotting to work. If it's not running,
 you'll get lots of errors.
+
+
+### Note about Termcolor
+Install with `pip install termcolor`
 
 ### Running the Code
 To run the experiment from the paper, run the command `python train.py` from the top level of this repo

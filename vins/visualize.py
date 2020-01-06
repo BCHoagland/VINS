@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import torch
 from visdom import Visdom
+from termcolor import colored
 
 d = {}
 
