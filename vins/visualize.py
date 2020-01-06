@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import torch
 from visdom import Visdom
-from termcolor import colored
 
 d = {}
 
@@ -78,11 +77,11 @@ def plot(t, r, data_type, name, color='#000'):
     viz._send({'data': data, 'layout': layout, 'win': win})
 
 
-def map(v, low, high, name):                                                                          # move into something PathEnv specific
+def map(v, low, high, name):
     points = np.zeros((int(high[0]) - int(low[0]) + 1, int(high[1]) - int(low[1]) + 1))
     for x in range(int(low[0]), int(high[0]) + 1):
         for y in range(int(low[1]), int(high[1]) + 1):
-            points[(x, y)] = v([x, y])
+            points[(x, y)] = v(torch.FloatTensor([x, y]))
 
     viz.heatmap(
         X=points.T,

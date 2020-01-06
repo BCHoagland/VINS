@@ -1,19 +1,11 @@
 import numpy as np
 import random
 from math import floor
-import gym
-from gym import spaces
 
-class PathEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
+class PathEnv():
 
     def __init__(self):
         self.directions = [[-1, 0], [0, 1], [1, 0], [0, -1]]
-
-        self.observation_space = spaces.Box(low=np.array([0, 0]), high=np.array([13, 11]), dtype=np.float32)
-        self.action_space = spaces.Discrete(4)
-        # self.action_space = spaces.Box(low=np.array([0]), high=np.array([4]), dtype=np.float32)
-
         self._init_state()
 
     def _init_state(self):
@@ -53,3 +45,6 @@ class PathEnv(gym.Env):
     def reset(self):
         self._init_state()
         return self._obs()
+
+    def random_action(self):
+        return int(random.random() * 4)

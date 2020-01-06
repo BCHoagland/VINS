@@ -1,27 +1,26 @@
-import os, sys, importlib
-from termcolor import colored
+from vins.agent import Agent
+import path
 
-try:
-    f = sys.argv[1]
-    if '.py' in f: f = f[:-3]
-    script = 'scripts.' + f
+class Config:
+    vis_iter = 200
+    lr = 3e-4
 
-    com = colored(f, 'cyan')
-    print(f'Running {com}')
-    importlib.import_module(script)
 
-except (IndexError, ModuleNotFoundError):
-    com = colored('python train.py {script_name}', 'yellow')
-    print('You need to specify which script to execute as so:\n' + com)
+# make VINS agent using expert demos
+demos = path.expert_demos()
+agent = Agent(Config, demos)
 
-    scripts = [f[:-3] for f in os.listdir('scripts') if '.py' in f]
-    print('\n' + colored('Available Scripts:', 'cyan'))
-    for script in scripts:
-        print(' + ' + script)
+# run value function extrapolation using standard TD error
+agent.fit_value(epochs=1e4, negative_sampling=False)
+agent.map_value('Normal')
 
-except KeyboardInterrupt:
-    com = colored('Cancelled'.ljust(50), 'red')
-    sys.stdout.write(f'\r{com}\n')
+# reset the agent and run conservative value function extrapolation
+agent.reset()
+agent.fit_value(epochs=4e4)
+agent.map_value('NS')
 
-except:
-    raise
+# run behavioral cloning to get base policy
+agent.behavior_clone(epochs=1e4)
+
+# demo the BC policy and the implicit VINS policy
+agent.run(1e3)
