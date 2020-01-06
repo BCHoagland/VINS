@@ -8,17 +8,17 @@ From the paper `Learning Self-Correctable Policies and Value Functions from Demo
 
 ## Usage
 
-# Dependencies:
+### Dependencies:
 * PyTorch
 * NumPy
 * Visdom
 
-# Note about Visdom
+### Note about Visdom
 Visdom is how everything gets plotted. To install, run `pip install visdom`. Before running the code in this repo, open a seprate terminal window
 and run the command `visdom`. A GUI will appear on `localhost:8097`. This process has to run in the background for plotting to work. If it's not running,
 you'll get lots of errors.
 
-# Running the Code
+### Running the Code
 To run the experiment from the paper, run the command `python train.py` from the top level of this repo
 
 
@@ -26,10 +26,10 @@ To run the experiment from the paper, run the command `python train.py` from the
 
 ## Code Structure
 
-# Path
+### Path
 Contains the implementation of the path environment from the paper
 
-# Vins
+### Vins
 Contains code for the learning agent (`agent.py`), neural networks (`models.py`), and visdom plotting (`visualize.py`)
 
 
